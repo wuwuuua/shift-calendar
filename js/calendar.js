@@ -1,10 +1,10 @@
 // js/calendar.js
 
 const SHIFT_TYPES = {
-  D: { label: '早班', color: '#3B82F6', time: '08:00-16:00' },
-  S: { label: '中班', color: '#F59E0B', time: '16:00-24:00' },
-  N: { label: '晚班', color: '#8B5CF6', time: '00:00-08:00' },
-  R: { label: '休息', color: '#9CA3AF', time: '' }
+  D: { label: 'D', color: '#3B82F6', time: '08:30-20:30' },
+  S: { label: 'S', color: '#F59E0B', time: '08:30-17:30' },
+  N: { label: 'N', color: '#8B5CF6', time: '20:30-08:30' },
+  R: { label: 'R', color: '#9CA3AF', time: '20:30-08:30' }
 };
 
 const SHIFT_ORDER = ['D', 'S', 'N', 'R', null];

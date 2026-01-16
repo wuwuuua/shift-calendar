@@ -37,27 +37,27 @@ const ICS = {
     let startDate, endDate, startTime, endTime;
 
     switch(shift) {
-      case 'D': // 早班 08:00-16:00
+      case 'D': // 早班 08:30-20:30
         startDate = `${year}${month}${day}`;
-        startTime = '080000';
+        startTime = '083000';
         endDate = `${year}${month}${day}`;
-        endTime = '160000';
+        endTime = '203000';
         break;
-      case 'S': // 中班 16:00-24:00
+      case 'S': // 中班 08:30-17:30
         startDate = `${year}${month}${day}`;
-        startTime = '160000';
-        endDate = this.getNextDay(dateStr);
-        endTime = '000000';
+        startTime = '083000';
+        endDate = `${year}${month}${day}`;
+        endTime = '173000';
         break;
-      case 'N': // 晚班 00:00-08:00，结束到第二天08:30
+      case 'N': // 晚班 20:30-08:30，结束到第二天08:30
         startDate = `${year}${month}${day}`;
-        startTime = '000000';
+        startTime = '203000';
         endDate = this.getNextDay(dateStr);
         endTime = '083000';
         break;
       case 'R': // 休息，到第二天08:30
         startDate = `${year}${month}${day}`;
-        startTime = '000000';
+        startTime = '203000';
         endDate = this.getNextDay(dateStr);
         endTime = '083000';
         break;
