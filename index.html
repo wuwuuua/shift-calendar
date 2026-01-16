@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人排班日历</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>个人排班日历</h1>
+      <button id="exportBtn" class="btn-export">导出 ICS</button>
+    </header>
+
+    <nav class="nav">
+      <button id="prevMonth" class="btn-nav">&lt; 上月</button>
+      <div class="month-selector">
+        <select id="yearSelect"></select>
+        <select id="monthSelect"></select>
+      </div>
+      <button id="nextMonth" class="btn-nav">下月 &gt;</button>
+    </nav>
+
+    <div class="today-nav">
+      <button id="todayBtn" class="btn-today">返回今天</button>
+    </div>
+
+    <div class="calendar">
+      <div class="calendar-header">
+        <div class="day-name">周日</div>
+        <div class="day-name">周一</div>
+        <div class="day-name">周二</div>
+        <div class="day-name">周三</div>
+        <div class="day-name">周四</div>
+        <div class="day-name">周五</div>
+        <div class="day-name">周六</div>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="hint">
+      点击日期切换排班状态：D→S→N→R→无
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ics.js"></script>
+  <script src="js/calendar.js"></script>
+</body>
+</html>
