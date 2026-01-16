@@ -28,6 +28,11 @@ const ICS = {
       `DTSTART:${timeRange.start}`,
       `DTEND:${timeRange.end}`,
       `SUMMARY:${shiftInfo.label}`,
+      'BEGIN:VALARM',
+      'TRIGGER:-PT35M',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Reminder',
+      'END:VALARM',
       'END:VEVENT'
     ];
   },
