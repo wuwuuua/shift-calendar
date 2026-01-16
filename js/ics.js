@@ -25,9 +25,8 @@ const ICS = {
       `DTSTART;VALUE=DATE:${year}${month}${day}`,
       `DTEND;VALUE=DATE:${this.getNextDay(dateStr)}`,
       `SUMMARY:${shiftInfo.label}`,
-      shiftInfo.time ? `DESCRIPTION:${shiftInfo.time}` : '',
       'END:VEVENT'
-    ].filter(line => line !== '');
+    ];
   },
 
   getNextDay(dateStr) {
