@@ -19,14 +19,54 @@ const ICS = {
     const uid = `${dateStr}-${shift}@shiftcalendar`;
     const [year, month, day] = dateStr.split('-');
 
+    // 解析时间并生成DTSTART和DTEND
+    const timeRange = this.parseTimeRange(shift, shiftInfo.time, dateStr);
+
     return [
       'BEGIN:VEVENT',
       `UID:${uid}`,
-      `DTSTART;VALUE=DATE:${year}${month}${day}`,
-      `DTEND;VALUE=DATE:${this.getNextDay(dateStr)}`,
+      `DTSTART:${timeRange.start}`,
+      `DTEND:${timeRange.end}`,
       `SUMMARY:${shiftInfo.label}`,
       'END:VEVENT'
     ];
+  },
+
+  parseTimeRange(shift, timeStr, dateStr) {
+    const [year, month, day] = dateStr.split('-');
+    let startDate, endDate, startTime, endTime;
+
+    switch(shift) {
+      case 'D': // 早班 08:00-16:00
+        startDate = `${year}${month}${day}`;
+        startTime = '080000';
+        endDate = `${year}${month}${day}`;
+        endTime = '160000';
+        break;
+      case 'S': // 中班 16:00-24:00
+        startDate = `${year}${month}${day}`;
+        startTime = '160000';
+        endDate = this.getNextDay(dateStr);
+        endTime = '000000';
+        break;
+      case 'N': // 晚班 00:00-08:00，结束到第二天08:30
+        startDate = `${year}${month}${day}`;
+        startTime = '000000';
+        endDate = this.getNextDay(dateStr);
+        endTime = '083000';
+        break;
+      case 'R': // 休息，到第二天08:30
+        startDate = `${year}${month}${day}`;
+        startTime = '000000';
+        endDate = this.getNextDay(dateStr);
+        endTime = '083000';
+        break;
+    }
+
+    return {
+      start: `${startDate}T${startTime}`,
+      end: `${endDate}T${endTime}`
+    };
   },
 
   getNextDay(dateStr) {
