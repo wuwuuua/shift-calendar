@@ -186,4 +186,44 @@ function bindEvents() {
   document.getElementById('exportBtn').addEventListener('click', () => {
     ICS.download(currentYear, currentMonth);
   });
+
+  // 清空数据按钮
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    const hasData = Object.keys(Storage.getAll()).length > 0;
+    if (!hasData) {
+      alert('当前没有数据可以清空');
+      return;
+    }
+
+    if (confirm('确定要清空所有排班数据吗？此操作不可恢复！')) {
+      Storage.clear();
+      renderCalendar();
+
+      // 显示成功提示
+      showToast('数据已清空');
+    }
+  });
+}
+
+// 显示提示消息
+function showToast(message) {
+  // 移除已存在的提示
+  const existingToast = document.querySelector('.toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
 }
