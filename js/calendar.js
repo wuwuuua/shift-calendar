@@ -4,10 +4,10 @@ const SHIFT_TYPES = {
   D: { label: 'D', color: '#3B82F6', time: '08:30-20:30' },
   S: { label: 'S', color: '#F59E0B', time: '08:30-17:30' },
   N: { label: 'N', color: '#8B5CF6', time: '20:30-08:30' },
-  R: { label: 'R', color: '#9CA3AF', time: '20:30-08:30' }
+  W: { label: 'W', color: '#46945f', time: '08:30-17:30' }
 };
 
-const SHIFT_ORDER = ['D', 'S', 'N', 'R', null];
+const SHIFT_ORDER = ['D', 'S', 'N', 'W', null];
 
 let currentDate = new Date();
 let currentYear = currentDate.getFullYear();
@@ -111,7 +111,7 @@ function updateSelectors() {
 
 function updateStats() {
   const shifts = Storage.getMonthShifts(currentYear, currentMonth);
-  const stats = { D: 0, S: 0, N: 0, R: 0 };
+  const stats = { D: 0, S: 0, N: 0, W: 0 };
 
   Object.values(shifts).forEach(shift => {
     if (stats.hasOwnProperty(shift)) {
@@ -120,10 +120,10 @@ function updateStats() {
   });
 
   const statsHtml = `
-    早班: ${stats.D}天 |
-    中班: ${stats.S}天 |
-    晚班: ${stats.N}天 |
-    休息: ${stats.R}天
+    D: ${stats.D}天 |
+    S: ${stats.S}天 |
+    N: ${stats.N}天 |
+    W: ${stats.W}天
   `;
 
   document.getElementById('stats').innerHTML = statsHtml;
