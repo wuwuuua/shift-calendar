@@ -63,7 +63,7 @@ const ICS = {
       case 'W':
         startDate = `${year}${month}${day}`;
         startTime = '083000';
-        endDate = this.getNextDay(dateStr);
+        endDate = `${year}${month}${day}`;
         endTime = '173000';
         break;
     }
