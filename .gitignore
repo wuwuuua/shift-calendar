@@ -1,2 +1,5 @@
 # Editor history
 .history/
+
+# Git worktrees
+.worktrees/
