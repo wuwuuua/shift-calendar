@@ -1,20 +1,17 @@
 // js/calendar.js
 
-const SHIFT_TYPES = {
-  D: { label: 'D', color: '#3B82F6', time: '08:30-20:30' },
-  S: { label: 'S', color: '#F59E0B', time: '08:30-17:30' },
-  N: { label: 'N', color: '#8B5CF6', time: '20:30-08:30' },
-  W: { label: 'W', color: '#46945f', time: '08:30-17:30' }
-};
-
-const SHIFT_ORDER = ['D', 'S', 'N', 'W', null];
-
 let currentDate = new Date();
 let currentYear = currentDate.getFullYear();
 let currentMonth = currentDate.getMonth();
 
 // 记录当前按住的键
 let pressedKey = null;
+
+// 获取当前班次顺序（用于循环切换）
+function getShiftOrder() {
+  const shifts = ShiftManager.getAll();
+  return shifts.map(s => s.id).concat([null]);
+}
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
@@ -72,7 +69,8 @@ function renderCalendar() {
   const today = new Date();
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const shift = Storage.getShift(dateStr);
+    const shiftId = Storage.getShift(dateStr);
+    const shift = shiftId ? ShiftManager.getById(shiftId) : null;
 
     const cell = document.createElement('div');
     cell.className = 'calendar-day';
@@ -95,8 +93,8 @@ function renderCalendar() {
     if (shift) {
       const shiftBadge = document.createElement('div');
       shiftBadge.className = 'shift-badge';
-      shiftBadge.textContent = shift;
-      shiftBadge.style.backgroundColor = SHIFT_TYPES[shift].color;
+      shiftBadge.textContent = shift.label;
+      shiftBadge.style.backgroundColor = shift.color;
       cell.appendChild(shiftBadge);
     }
 
@@ -114,22 +112,28 @@ function updateSelectors() {
 
 function updateStats() {
   const shifts = Storage.getMonthShifts(currentYear, currentMonth);
-  const stats = { D: 0, S: 0, N: 0, W: 0 };
+  const allShifts = ShiftManager.getAll();
+  const stats = {};
 
-  Object.values(shifts).forEach(shift => {
-    if (stats.hasOwnProperty(shift)) {
-      stats[shift]++;
+  // 初始化统计
+  allShifts.forEach(shift => {
+    stats[shift.id] = { count: 0, label: shift.label };
+  });
+
+  // 统计各班次数量
+  Object.values(shifts).forEach(shiftId => {
+    if (stats[shiftId]) {
+      stats[shiftId].count++;
     }
   });
 
-  const statsHtml = `
-    D: ${stats.D}天 |
-    S: ${stats.S}天 |
-    N: ${stats.N}天 |
-    W: ${stats.W}天
-  `;
+  // 生成统计 HTML
+  const statsHtml = Object.values(stats)
+    .filter(s => s.count > 0)
+    .map(s => `${s.label}: ${s.count}天`)
+    .join(' | ');
 
-  document.getElementById('stats').innerHTML = statsHtml;
+  document.getElementById('stats').innerHTML = statsHtml || '本月暂无排班';
 }
 
 function bindEvents() {
@@ -178,15 +182,19 @@ function bindEvents() {
     const dateStr = cell.dataset.date;
 
     // 如果按住了快捷键，直接设置为对应班次
-    if (pressedKey && ['D', 'S', 'N', 'W'].includes(pressedKey)) {
-      Storage.setShift(dateStr, pressedKey);
+    if (pressedKey) {
+      const shift = ShiftManager.getByHotkey(pressedKey);
+      if (shift) {
+        Storage.setShift(dateStr, shift.id);
+      }
     } else {
       // 否则按原逻辑循环切换
-      const currentShift = Storage.getShift(dateStr);
-      const currentIndex = SHIFT_ORDER.indexOf(currentShift);
-      const nextIndex = (currentIndex + 1) % SHIFT_ORDER.length;
-      const nextShift = SHIFT_ORDER[nextIndex];
-      Storage.setShift(dateStr, nextShift);
+      const currentShiftId = Storage.getShift(dateStr);
+      const shiftOrder = getShiftOrder();
+      const currentIndex = shiftOrder.indexOf(currentShiftId);
+      const nextIndex = (currentIndex + 1) % shiftOrder.length;
+      const nextShiftId = shiftOrder[nextIndex];
+      Storage.setShift(dateStr, nextShiftId);
     }
 
     renderCalendar();
@@ -194,9 +202,16 @@ function bindEvents() {
 
   // 键盘事件监听
   document.addEventListener('keydown', (e) => {
+    // 忽略在表单输入中的按键
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      return;
+    }
+
     const key = e.key.toUpperCase();
-    if (['D', 'S', 'N', 'W'].includes(key)) {
+    const shift = ShiftManager.getByHotkey(key);
+    if (shift) {
       pressedKey = key;
+      e.preventDefault(); // 防止快捷键触发其他操作
     }
   });
 

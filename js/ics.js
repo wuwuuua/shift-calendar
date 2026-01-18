@@ -5,9 +5,12 @@ const ICS = {
     const shifts = Storage.getMonthShifts(year, month);
     const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ShiftCalendar//CN'];
 
-    Object.entries(shifts).forEach(([dateStr, shift]) => {
-      const event = this.createEvent(dateStr, shift);
-      lines.push(...event);
+    Object.entries(shifts).forEach(([dateStr, shiftId]) => {
+      const shift = ShiftManager.getById(shiftId);
+      if (shift) {
+        const event = this.createEvent(dateStr, shift);
+        lines.push(...event);
+      }
     });
 
     lines.push('END:VCALENDAR');
@@ -15,19 +18,22 @@ const ICS = {
   },
 
   createEvent(dateStr, shift) {
-    const shiftInfo = SHIFT_TYPES[shift];
-    const uid = `${dateStr}-${shift}@shiftcalendar`;
-    const [year, month, day] = dateStr.split('-');
+    const uid = `${dateStr}-${shift.id}@shiftcalendar`;
+    const [year, month, day] = dateStr.split('-').map(s => s.padStart(2, '0'));
 
     // 解析时间并生成DTSTART和DTEND
-    const timeRange = this.parseTimeRange(shift, shiftInfo.time, dateStr);
+    const timeRange = this.parseTimeRange(shift, dateStr);
+
+    const summary = shift.description
+      ? `${shift.label} - ${shift.description}`
+      : shift.label;
 
     return [
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTART:${timeRange.start}`,
       `DTEND:${timeRange.end}`,
-      `SUMMARY:${shiftInfo.label}`,
+      `SUMMARY:${summary}`,
       'BEGIN:VALARM',
       'TRIGGER:-PT35M',
       'ACTION:DISPLAY',
@@ -37,35 +43,20 @@ const ICS = {
     ];
   },
 
-  parseTimeRange(shift, timeStr, dateStr) {
-    const [year, month, day] = dateStr.split('-');
-    let startDate, endDate, startTime, endTime;
+  parseTimeRange(shift, dateStr) {
+    const [year, month, day] = dateStr.split('-').map(s => s.padStart(2, '0'));
+    const startDate = `${year}${month}${day}`;
 
-    switch(shift) {
-      case 'D':
-        startDate = `${year}${month}${day}`;
-        startTime = '083000';
-        endDate = `${year}${month}${day}`;
-        endTime = '203000';
-        break;
-      case 'S':
-        startDate = `${year}${month}${day}`;
-        startTime = '083000';
-        endDate = `${year}${month}${day}`;
-        endTime = '173000';
-        break;
-      case 'N':
-        startDate = `${year}${month}${day}`;
-        startTime = '203000';
-        endDate = this.getNextDay(dateStr);
-        endTime = '083000';
-        break;
-      case 'W':
-        startDate = `${year}${month}${day}`;
-        startTime = '083000';
-        endDate = `${year}${month}${day}`;
-        endTime = '173000';
-        break;
+    // 格式化时间 (HH:MM -> HHMMSS)
+    const formatTime = (time) => time.replace(':', '') + '00';
+
+    const startTime = formatTime(shift.startTime);
+    let endDate = startDate;
+    let endTime = formatTime(shift.endTime);
+
+    // 如果跨天，结束日期加一天
+    if (shift.isNextDay) {
+      endDate = this.getNextDay(dateStr);
     }
 
     return {
