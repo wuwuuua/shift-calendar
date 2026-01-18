@@ -13,6 +13,9 @@ let currentDate = new Date();
 let currentYear = currentDate.getFullYear();
 let currentMonth = currentDate.getMonth();
 
+// 记录当前按住的键
+let pressedKey = null;
+
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   initSelectors();
@@ -173,13 +176,35 @@ function bindEvents() {
     if (!cell || cell.classList.contains('empty')) return;
 
     const dateStr = cell.dataset.date;
-    const currentShift = Storage.getShift(dateStr);
-    const currentIndex = SHIFT_ORDER.indexOf(currentShift);
-    const nextIndex = (currentIndex + 1) % SHIFT_ORDER.length;
-    const nextShift = SHIFT_ORDER[nextIndex];
 
-    Storage.setShift(dateStr, nextShift);
+    // 如果按住了快捷键，直接设置为对应班次
+    if (pressedKey && ['D', 'S', 'N', 'W'].includes(pressedKey)) {
+      Storage.setShift(dateStr, pressedKey);
+    } else {
+      // 否则按原逻辑循环切换
+      const currentShift = Storage.getShift(dateStr);
+      const currentIndex = SHIFT_ORDER.indexOf(currentShift);
+      const nextIndex = (currentIndex + 1) % SHIFT_ORDER.length;
+      const nextShift = SHIFT_ORDER[nextIndex];
+      Storage.setShift(dateStr, nextShift);
+    }
+
     renderCalendar();
+  });
+
+  // 键盘事件监听
+  document.addEventListener('keydown', (e) => {
+    const key = e.key.toUpperCase();
+    if (['D', 'S', 'N', 'W'].includes(key)) {
+      pressedKey = key;
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    const key = e.key.toUpperCase();
+    if (key === pressedKey) {
+      pressedKey = null;
+    }
   });
 
   // 导出按钮
