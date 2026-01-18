@@ -24,23 +24,29 @@ const ICS = {
     // 解析时间并生成DTSTART和DTEND
     const timeRange = this.parseTimeRange(shift, dateStr);
 
-    const summary = shift.description
-      ? `${shift.label} - ${shift.description}`
-      : shift.label;
-
-    return [
+    const event = [
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTART:${timeRange.start}`,
       `DTEND:${timeRange.end}`,
-      `SUMMARY:${summary}`,
+      `SUMMARY:${shift.label}`,
+    ];
+
+    // 如果有描述，添加 DESCRIPTION 字段
+    if (shift.description) {
+      event.push(`DESCRIPTION:${shift.description}`);
+    }
+
+    event.push(
       'BEGIN:VALARM',
       'TRIGGER:-PT35M',
       'ACTION:DISPLAY',
       'DESCRIPTION:Reminder',
       'END:VALARM',
       'END:VEVENT'
-    ];
+    );
+
+    return event;
   },
 
   parseTimeRange(shift, dateStr) {
